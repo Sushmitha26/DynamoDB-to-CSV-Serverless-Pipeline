@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: CloudFormation template for CS218 Final - JSON to CSV Converter
+Parameters:
+  StudentId:
+    Type: String
+    Default: '017721457'
+Resources:
+  SQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName:
+        Fn::Sub: cs218-final-queue-${StudentId}
+      VisibilityTimeout: 180
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: LambdaAccessPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - s3:*
+            - dynamodb:*
+            - logs:*
+            - sqs:*
+            Resource: '*'
+  JsonToCsvLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: json-to-csv-${StudentId}
+      Handler: index.handler
+      Runtime: python3.9
+      CodeUri: s3://cs218-final-code-bucket-017721457/79f9a42b2ec0a8b1381d6c67f39523c9
+      Role:
+        Fn::GetAtt:
+        - LambdaExecutionRole
+        - Arn
+      Timeout: 120
+      Events:
+        SQSTrigger:
+          Type: SQS
+          Properties:
+            Queue:
+              Fn::GetAtt:
+              - SQSQueue
+              - Arn
+            BatchSize: 1
+  QueuePopulatorLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: queue-populator-${StudentId}
+      Handler: index.handler
+      Runtime: python3.9
+      CodeUri: s3://cs218-final-code-bucket-017721457/50165ea58c3a9285de2b7898b8bf6212
+      Role:
+        Fn::GetAtt:
+        - LambdaExecutionRole
+        - Arn
+      Timeout: 60

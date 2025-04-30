@@ -1,0 +1,5 @@
+{
+  "input_bucket": "cs218-final-input-bucket-017721457",
+  "output_bucket": "cs218-final-code-bucket-017721457",
+  "queue_url": "https://sqs.us-west-2.amazonaws.com/524626596288/cs218-final-queue-017721457"
+}
