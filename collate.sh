@@ -8,7 +8,7 @@ CSV_PREFIX="csv_files/"
 TMP_DIR="./tmp_csvs"
 FINAL_OUTPUT="collated_output.csv"
 
-# 1. Call Lambda function
+#Call Lambda function
 echo "Invoking queue-populator Lambda..."
 QUEUE_URL=$(aws sqs get-queue-url \
   --queue-name cs218-final-queue-${STUDENT_ID} \
@@ -26,12 +26,12 @@ aws lambda invoke \
 echo "Waiting 60 seconds for processing..."
 sleep 60
 
-# 2. Download all CSV files from S3 to /tmp
+#Download all CSV files from S3 to /tmp_csvs in local
 echo "Downloading CSV files..."
 mkdir -p $TMP_DIR
 aws s3 cp s3://$OUTPUT_BUCKET/$CSV_PREFIX $TMP_DIR --recursive --exclude "*" --include "*.csv"
 
-# 3. Merge all CSVs into one
+#Merging all CSVs into one
 echo "Collating CSVs..."
 header_written=false
 > $FINAL_OUTPUT
